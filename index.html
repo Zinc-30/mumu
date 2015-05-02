@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <title>中国省市GDP发展</title>
+</head>
+<body>
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div id="main1" style="height:20px"></div>
+    <div id="chart0" style="height:400px"></div>
+    <div id="lip" style="height:20px"></div>
+    <div id="chart1" style="height:400px"></div>
+    
+    <!-- ECharts单文件引入 -->
+    <script src="js/echarts.js"></script>
+    <script src="js/dump.js"></script>
+    <script src="js/d3.js"></script>
+    <script type="text/javascript">
+        var str;
+        d3.json("data/GDP1.json",function(error,root){
+            if(error) return console.error(error);
+            dataGDP = root;
+        });
+    </script>
+    
+    <script type="text/javascript">
+        // 路径配置
+        require.config({
+            paths: {
+                echarts: "js"
+            }
+        });
+        
+        // 使用
+        require(
+            [
+                'echarts',
+                'echarts/chart/bar', // 使用柱状图就加载bar模块，按需加载
+                'echarts/chart/map',
+                'echarts/chart/pie'
+            ],
+            function (ec) {
+                // 基于准备好的dom，初始化echarts图表
+                var myChart = ec.init(document.getElementById('chart0'));
+                option = {
+                    //backgroundColor: '#1b1b1b',
+                    color: [
+                        '#ff7f50', '#87cefa', '#da70d6', '#32cd32', '#6495ed',
+                        '#ff69b4', '#ba55d3', '#cd5c5c', '#ffa500', '#40e0d0',
+                        '#1e90ff', '#ff6347', '#7b68ee', '#00fa9a', '#ffd700',
+                        '#6b8e23', '#ff00ff', '#3cb371', '#b8860b', '#30e0e0'
+                    ],
+                    title : {
+                        text: '2005中国各地区GDP显示',
+                        x:'center',
+                    },
+                    tooltip : {
+                        trigger: 'item',
+                        formatter: '{b}:GDP={c}亿元'
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        x:'right',
+                        data:['北京','上海','广东'],
+                        selectedMode: 'multiple',
+
+                    },
+                    toolbox: {
+                        show : false,
+                        orient : 'vertical',
+                        x: 'right',
+                        y: 'center',
+                        feature : {
+                            mark : {show: false},
+                            dataView : {show: true, readOnly: true},
+                            restore : {show: true},
+                            saveAsImage : {show: true}
+                        }
+                    },
+                    dataRange: {
+                        min : 0,
+                        max : 60000,
+                        orient: 'horizontal',
+                        calculable : true,
+                        color: ['#ff3333', 'orange', 'yellow','lime','aqua'],
+                    },
+                    series : [
+                        {
+                            name: '全国地区数据',
+                            type: 'map',
+                            mapType: 'china',
+                            //center: [0, 225],
+                            mapLocation:{x:"left",y:'center'},
+                            selectedMode : 'multiple',
+                            itemStyle:{
+                                normal:{
+                                    label:{show:true},
+                                    borderColor:'rgba(100,149,237,1)',
+                                    borderWidth:0.5,
+                                    areaStyle:{
+                                        color: '#1b1b1b'
+                                    }
+                                }
+                            },
+                            data:dataGDP[2005],
+                        },
+                        {
+                            name:'全国GDP对比',
+                            type:'pie',
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: "{a} <br/>{b} : {c} ({d}%)"
+                            },
+                            center: [900, 225],
+                            roseType:"radius",
+                            radius: ['40%', '70%'],
+                            legendHoverLink:true,
+                            itemStyle : {
+                                normal : {
+                                    label : {
+                                        show : true
+                                    },
+                                    labelLine : {
+                                        show : true
+                                    }
+                                },
+                                emphasis : {
+                                    label : {
+                                        show : true,
+                                        position : 'center',
+                                        textStyle : {
+                                            fontSize : '30',
+                                            fontWeight : 'bold'
+                                        }
+                                    }
+                                }
+                            },
+                            data:[]
+                        }
+                    ],
+                    animation: true
+                };
+                // 为echarts对象加载数据
+                myChart.setOption(option);
+                var ecConfig = require('echarts/config');
+                myChart.on(ecConfig.EVENT.MAP_SELECTED, function (param) {
+                    //dump(param.selected);
+                    var selected = param.selected;
+                    var mapSeries = option.series[0];
+                    var data = [];
+                    var legendData = [];
+                    var name;
+
+                    for (var p = 0, len = mapSeries.data.length; p < len; p++) {
+                        name = mapSeries.data[p].name;
+                        if (selected[name]) {
+                            data.push({
+                                name: name,
+                                value: mapSeries.data[p].value
+                            });
+                            legendData.push(name);
+                        }
+                    }
+                    option.legend.data = legendData;
+                    option.series[1].data = data;
+                    myChart.setOption(option, true);
+                });
+
+//=================================================
+                var myChart1 = ec.init(document.getElementById('chart1'));
+                option2 = {
+                    timeline:{
+                        data:[
+                            '2005-01-01','2006-01-01','2007-01-01','2008-01-01','2009-01-01',
+                            '2010-01-01','2011-01-01','2012-01-01','2013-01-01','2014-01-01'
+                        ],
+                        label : {
+                            formatter : function(s) {
+                                return s.slice(0, 4);
+                            }
+                        },
+                        autoPlay : true,
+                        playInterval : 1000
+                    },
+                    options:[
+                        {
+                            title : {
+                                'text':'2005 GDP 数值',
+                                x:'left',
+                                textStyle : {
+                                }
+                            },
+                            tooltip : {'trigger':'axis'},
+                            legend : {
+                                x:'right',
+                                'data':['GDP'],
+                            },
+                            toolbox : {
+                                'show':false,
+                                orient : 'vertical',
+                                x: 'right',
+                                y: 'center',
+                                'feature':{
+                                    'mark':{'show':true},
+                                }
+                            },
+                            calculable : true,
+                            grid : {'y':80,'y2':100},
+                            xAxis : [{
+                                'type':'category',
+                                'axisLabel':{'interval':0},
+                                'data':[
+                                    '北京','\n天津','河北','\n山西','内蒙古','\n辽宁','吉林','\n黑龙江',
+                                    '上海','\n江苏','浙江','\n安徽','福建','\n江西','山东','\n河南',
+                                    '湖北','\n湖南','广东','\n广西','海南','\n重庆','四川','\n贵州',
+                                    '云南','\n西藏','陕西','\n甘肃','青海','\n宁夏','新疆'
+                                ]
+                            }],
+                            yAxis : [
+                                {
+                                    'type':'value',
+                                    'name':'GDP（亿元）',
+                                    'max':60000
+                                },
+                            ],
+                            series : [
+                                {
+                                    'name':'GDP',
+                                    'type':'bar',
+                                    'markLine':{
+                                        symbol : ['arrow','none'],
+                                        symbolSize : [4, 2],
+                                        itemStyle : {
+                                            normal: {
+                                                lineStyle: {color:'orange'},
+                                                barBorderColor:'orange',
+                                                label:{
+                                                    position:'left',
+                                                    formatter:function(a,b,c){return Math.round(c)},
+                                                    textStyle:{color:'orange'}
+                                                }
+                                            }
+                                        },
+                                        'data':[{'type':'average','name':'平均值'}]
+                                    },
+                                    'data': dataGDP['2005']
+                                },
+                            ]
+                        },
+                        {
+                            title : {'text':'2006 GDP 数值'},
+                            series : [
+                                {'data': dataGDP['2006']},
+                            ]
+                        },
+                        {
+                            title : {'text':'2007 GDP 数值'},
+                            series : [
+                                {'data': dataGDP['2007']},
+                            ]
+                        },
+                        {
+                            title : {'text':'2008 GDP 数值'},
+                            series : [
+                                {'data': dataGDP['2008']},
+                            ]
+                        },
+                        {
+                            title : {'text':'2009 GDP 数值'},
+                            series : [
+                                {'data': dataGDP['2009']},
+                            ]
+                        },
+                        {
+                            title : {'text':'2010 GDP 数值'},
+                            series : [
+                                {'data': dataGDP['2010']},
+                            ]
+                        },
+                        {
+                            title : {'text':'2011 GDP 数值'},
+                            series : [
+                                {'data': dataGDP['2011']},
+                            ]
+                        },
+                        {
+                            title : {'text':'2012 GDP 数值'},
+                            series : [
+                                {'data': dataGDP['2012']},
+                            ]
+                        },
+                        {
+                            title : {'text':'2013 GDP 数值'},
+                            series : [
+                                {'data': dataGDP['2013']},
+                            ]
+                        },
+                        {
+                            title : {'text':'2014 GDP 数值'},
+                            series : [
+                                {'data': dataGDP['2014']},
+                            ]
+                        }
+                    ]
+                };
+                myChart1.setOption(option2);
+                //dump(dataGDP);
+                myChart1.on(ecConfig.EVENT.TIMELINE_CHANGED, function (param) {
+                    ////dump(param.currentIndex+2005);
+                    var this_year = param.currentIndex+2005;  
+                    var selected = option.legend.data;
+                    var data = [];
+                    for (var p = 0, len = selected.length; p < len; p++) {
+                        var name = selected[p];
+                        for (var i = 0;i<dataGDP[this_year].length;i++){
+                            if (dataGDP[this_year][i].name == name){
+                                
+                                data.push({
+                                    name: name,
+                                    value: dataGDP[this_year][i].value
+                                });
+                            }
+                        }
+                        ////dump(data);
+                    }
+                    
+                    option.title.text = this_year+"中国各地区GDP显示";
+                    option.series[0].data = dataGDP[this_year];
+                    option.series[1].data = data;
+                    myChart.setOption(option, true);
+                    myChart.setOption(option,true);
+                });
+            }
+        );
+    </script>
+</body>
