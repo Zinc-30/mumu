@@ -163,15 +163,16 @@ html {
 }
 
 body {
-    color: #eee;
-    font-family:AnJingChenYW46136;
+    color: #002;
+    font-family:Arial, STXihei, "Microsoft YaHei", SimSun, sans-serif;
 }
 
 #testfonts{
-    font-family:minijianyaya209903;
+    font-family:Arial, YouYuan, "Microsoft YaHei", SimSun, sans-serif;
+    /*font-family:minijianyaya209903;*/
 }
 #wishes{
-	font-family:minijianyaya209903;
+	font-family:Arial,华文行楷, "Microsoft YaHei", SimSun, sans-serif;
 }
 h1{
     font-family:AnJingChenYW46136;
